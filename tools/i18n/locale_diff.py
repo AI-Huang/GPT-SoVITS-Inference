@@ -2,12 +2,11 @@ import json
 import os
 from collections import OrderedDict
 
-# dir_path = "./i18n/locale" # The path to the i18n locale directory, you can change it to your own path
-dir_path = "./tools/srt_slicer/i18n/locale"
 # Define the standard file name
-standard_file = os.path.join(dir_path, "zh_CN.json")
+standard_file = "locale/zh_CN.json"
 
 # Find all JSON files in the directory
+dir_path = "locale/"
 languages = [
     os.path.join(dir_path, f)
     for f in os.listdir(dir_path)
@@ -31,7 +30,7 @@ for lang_file in languages:
 
     # Add any missing keys to the language file
     for key in diff:
-        lang_data[key] = standard_data[key]
+        lang_data[key] = key
 
     # Del any extra keys to the language file
     for key in miss:

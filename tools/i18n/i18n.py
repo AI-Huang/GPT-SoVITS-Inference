@@ -1,34 +1,41 @@
-import os
 import json
 import locale
-from src.common_config_manager import app_config
+import os
 
-def load_language_list(language, locale_paths):
-    language_map = {}
-    for locale_path in locale_paths:
-        lang_file = os.path.join(locale_path, f"{language}.json")
-        if os.path.exists(lang_file):
-            with open(lang_file, 'r', encoding='utf-8') as f:
-                language_map.update(json.load(f))
-    return language_map
+I18N_JSON_DIR: os.PathLike = os.path.join(os.path.dirname(os.path.relpath(__file__)), "locale")
+
+
+def load_language_list(language):
+    with open(os.path.join(I18N_JSON_DIR, f"{language}.json"), "r", encoding="utf-8") as f:
+        language_list = json.load(f)
+    return language_list
+
+
+def scan_language_list():
+    language_list = []
+    for name in os.listdir(I18N_JSON_DIR):
+        if name.endswith(".json"):
+            language_list.append(name.split(".")[0])
+    return language_list
+
 
 class I18nAuto:
-    def __init__(self, language=None, locale_paths=[], locale_path="./i18n/locale"):
-        if language in ["auto", None]:
-            if app_config.locale in ["auto", None, ""]:
-                language = locale.getdefaultlocale()[0]
-            else:
-                language = app_config.locale
-        if not any(os.path.exists(os.path.join(locale_path, f"{language}.json")) for locale_path in locale_paths):
-            language = "zh_CN"
+    def __init__(self, language=None):
+        if language in ["Auto", None]:
+            language = locale.getdefaultlocale()[0]
+            # getlocale can't identify the system's language ((None, None))
+        if not os.path.exists(os.path.join(I18N_JSON_DIR, f"{language}.json")):
+            language = "en_US"
         self.language = language
-        if len(locale_paths):
-            self.language_map = load_language_list(language, locale_paths)
-        else:
-            self.language_map = load_language_list(language, [locale_path])
+        self.language_map = load_language_list(language)
 
     def __call__(self, key):
         return self.language_map.get(key, key)
 
     def __repr__(self):
         return "Use Language: " + self.language
+
+
+if __name__ == "__main__":
+    i18n = I18nAuto(language="en_US")
+    print(i18n)
